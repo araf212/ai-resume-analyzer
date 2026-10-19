@@ -7,13 +7,22 @@ import { errorHandler } from './middleware/errorHandler';
 const app = express();
 
 // Middleware
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+const corsOrigin =
+  config.corsOrigin === '*'
+    ? '*'
+    : config.corsOrigin.includes(',')
+      ? config.corsOrigin.split(',').map((o) => o.trim())
+      : config.corsOrigin.trim();
+
+const corsOptions: cors.CorsOptions = {
+  origin: corsOrigin,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  credentials: false,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

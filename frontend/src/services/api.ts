@@ -5,12 +5,43 @@ import type {
   SampleDataResponse,
 } from '../types';
 
+/**
+ * Resolves the full URL for a given API endpoint.
+ * Supports:
+ * - VITE_API_BASE_URL (standard) or VITE_API_URL
+ * - Handles base URLs with or without trailing slash
+ * - Handles base URLs that already include /api
+ * - Falls back to relative paths (/api/...) for local development via Vite proxy
+ */
+export function getApiUrl(endpoint: string): string {
+  const envUrl = (
+    (typeof import.meta !== 'undefined' && import.meta.env && (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL)) ||
+    ''
+  ).trim();
+
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  if (!envUrl) {
+    return cleanEndpoint;
+  }
+
+  const baseUrl = envUrl.replace(/\/+$/, '');
+
+  // Avoid duplicate /api/api if user provided baseUrl ending in /api
+  if (baseUrl.endsWith('/api') && cleanEndpoint.startsWith('/api')) {
+    return `${baseUrl}${cleanEndpoint.slice(4)}`;
+  }
+
+  return `${baseUrl}${cleanEndpoint}`;
+}
+
 export class ApiService {
   /**
    * Check backend health and LLM provider status
    */
   public static async getHealth(): Promise<HealthResponse> {
-    const res = await fetch('/api/health');
+    const url = getApiUrl('/api/health');
+    const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`Health check failed with status: ${res.status}`);
     }
@@ -21,7 +52,8 @@ export class ApiService {
    * Fetch sample resume and job description for quick testing
    */
   public static async getSampleData(): Promise<SampleDataResponse> {
-    const res = await fetch('/api/sample');
+    const url = getApiUrl('/api/sample');
+    const res = await fetch(url);
     if (!res.ok) {
       throw new Error(`Failed to load sample data: ${res.status}`);
     }
@@ -39,12 +71,21 @@ export class ApiService {
     formData.append('resumeFile', file);
     formData.append('jobDescription', jobDescription);
 
-    const res = await fetch('/api/analyze', {
+    const url = getApiUrl('/api/analyze');
+    const res = await fetch(url, {
       method: 'POST',
       body: formData,
     });
 
-    const data = await res.json();
+    let data: any;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error(
+        `Server returned status ${res.status} (${res.statusText || 'Non-JSON response'}). If using a free tier host like Render, the backend container may still be spinning up.`
+      );
+    }
+
     if (!res.ok || !data.success) {
       const err = data as AnalyzeErrorResponse;
       throw new Error(err.error || `Analysis request failed with status: ${res.status}`);
@@ -60,7 +101,8 @@ export class ApiService {
     resumeText: string,
     jobDescription: string
   ): Promise<AnalyzeSuccessResponse> {
-    const res = await fetch('/api/analyze', {
+    const url = getApiUrl('/api/analyze');
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +110,15 @@ export class ApiService {
       body: JSON.stringify({ resumeText, jobDescription }),
     });
 
-    const data = await res.json();
+    let data: any;
+    try {
+      data = await res.json();
+    } catch {
+      throw new Error(
+        `Server returned status ${res.status} (${res.statusText || 'Non-JSON response'}). If using a free tier host like Render, the backend container may still be spinning up.`
+      );
+    }
+
     if (!res.ok || !data.success) {
       const err = data as AnalyzeErrorResponse;
       throw new Error(err.error || `Analysis request failed with status: ${res.status}`);

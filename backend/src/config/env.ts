@@ -14,6 +14,7 @@ export interface AppConfig {
   geminiModel: string;
   groqApiKey: string;
   groqModel: string;
+  corsOrigin: string;
 }
 
 export const config: AppConfig = {
@@ -25,4 +26,5 @@ export const config: AppConfig = {
   geminiModel: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
   groqApiKey: process.env.GROQ_API_KEY || '',
   groqModel: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+  corsOrigin: process.env.CORS_ORIGIN || '*',
 };
