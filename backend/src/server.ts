@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { config } from './config/env';
 import analyzeRoutes from './routes/analyzeRoutes';
@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api', analyzeRoutes);
 
 // Root greeting
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response): void => {
   res.json({
     name: 'AI Resume Analyzer Backend API',
     status: 'online',

@@ -164,6 +164,30 @@ The application will be accessible at:
 
 ---
 
+## 🌐 Deploying Backend on Render
+
+To deploy the **AI Resume Analyzer Backend API** as a Web Service on [Render](https://render.com/):
+
+### Option A: Recommended (Root Directory = `backend`)
+- **Environment**: `Node`
+- **Root Directory**: `backend`
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm start` (or `node dist/server.js`)
+- **Environment Variables**:
+  - `NODE_ENV`: `production`
+  - `PORT`: `10000` (or leave default, Render sets `PORT` automatically)
+  - `LLM_PROVIDER`: `gemini`
+  - `GEMINI_API_KEY`: `your_gemini_api_key`
+  - `GEMINI_MODEL`: `gemini-1.5-flash` (or `gemini-2.0-flash`)
+
+### Option B: From Repository Root
+- **Environment**: `Node`
+- **Root Directory**: *(leave blank or `.`)*
+- **Build Command**: `npm install && npm run build:backend`
+- **Start Command**: `npm run start:backend` (or `node backend/dist/server.js`)
+
+---
+
 ## 🧪 Running Automated Tests
 
 Run the backend test suite:

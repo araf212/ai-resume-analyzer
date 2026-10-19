@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 
 export function errorHandler(
-  err: any,
+  err: (Error & { statusCode?: number; code?: string }) | multer.MulterError,
   req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
